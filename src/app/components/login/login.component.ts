@@ -1,5 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-
+import { lastValueFrom } from 'rxjs';
+import { environment } from 'src/environments/environment.development';
+import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -9,34 +12,51 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
 
-  async login() {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  constructor(private http:HttpClient, private auth: AuthService) {}
 
-    const raw = JSON.stringify({
-      username: this.username,
-      password: this.password,
-    });
+  async login () {
+    // DAS ALLES KANN WEGGELASSEN WERDEN; WEIL WIR DAS JETZT IN EINER FUNKTION AUSGELAGERT HABEN (loginWithUsernameAndPassword)
+    // const myHeaders = new Headers();
+    // myHeaders.append('Content-Type', 'application/json');
 
-    const requestOptions: RequestInit = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    };
+    // const raw = JSON.stringify({
+    //   username: this.username,
+    //   password: this.password,
+    // });
 
-    try{
-    let response = await fetch('http://127.0.0.1:8000/login/', requestOptions)
-    let json = await response.json() 
-      localStorage.setItem('token', json.token)
-      console.log(response.body)
-      // Redirect to the home page
+    // const requestOptions: RequestInit = {
+    //   method: 'POST',
+    //   headers: myHeaders,
+    //   body: raw,
+    //   redirect: 'follow',
+    // };
+
+    try {
+      let response = await this.auth.loginWithUsernameAndPassword(this.username, this.password);
+      console.log(response);
+
+    // let response = await fetch(environment.baseUrl + '/login/', requestOptions)
+    // let json = await response.json()
+    //   localStorage.setItem('token', json.token)
+    //   console.log(json)
+    // Redirect to the home page
+      
     } catch (error) {
-      // Handle the error
       console.error('Error:', error);
     }
 
   }
+
+// AUSGELAGERT IN EINEN SERVICE
+  // loginWithUsernameAndPassword (username: string, password: string) {
+  //   const url = environment.baseUrl + '/login/';
+  //   const body = {
+  //     'username': username,
+  //     'password': password
+  //   };
+  //   return lastValueFrom(this.http.post(url, body));
+  // }
+
 
   ngOnInit(): void {}
 }
