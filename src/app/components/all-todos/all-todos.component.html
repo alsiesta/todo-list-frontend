@@ -1,1 +1,9 @@
-<p>all-todos works!</p>
+<h1>{{error}}</h1>
+
+<form (submit)="addTodo()">
+    <input type="text" [(ngModel)]="newTodo" name="newTodo">
+    <button type="submit">Add Todo</button>
+  </form>
+<div *ngFor="let todo of todos">
+    <input [(id)]="todo.id" type="checkbox" [checked]="todo.checked" (change)="onCheckboxChange($event, todo)"> {{ todo.title }} 
+</div>
