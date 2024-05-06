@@ -5,5 +5,5 @@
     <button type="submit">Add Todo</button>
   </form>
 <div *ngFor="let todo of todos">
-    <input [(id)]="todo.id" type="checkbox" [checked]="todo.checked" (change)="onCheckboxChange($event, todo)"> {{ todo.title }} 
+    <input [(id)]="todo.id" type="checkbox" [checked]="todo.checked" (change)="onCheckboxChange($event, todo)"> {{ todo.title }} <a class="mini-link" href="#" (click)="deleteTodo($event, todo.id)">Delete</a> 
 </div>

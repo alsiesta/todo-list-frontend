@@ -14,32 +14,55 @@ export class AllTodosComponent {
   todos: any = [];
   error = '';
   newTodo = '';
+  constructor (private http: HttpClient) { }
 
-addTodo() {
-  const url = environment.baseUrl + '/todos/';
-  const user = localStorage.getItem('user_id');
-  const body = { author: user, title: this.newTodo };
-  console.log(body);
+  async ngOnInit () {
+    this.todos = await this.handleApiCall(this.loadTodos(), 'Fehler beim Laden');
+  }
 
-  this.http.post(url, body).subscribe(
-    response => {
-      console.log(response);
-      this.loadTodos().then(todos => {
-        this.todos = todos;
-      } 
-      );
-    },
-    error => {
-      console.error('Error:', error);
-    }
-  );
-}
-  
-onCheckboxChange(event: any, todo: any) {
-  const url = environment.baseUrl + '/todos/' + todo.id + '/';
-  const updatedTodo = { ...todo, checked: event.target.checked };
+  addTodo () {
+    const url = environment.baseUrl + '/todos/';
+    const user = localStorage.getItem('user_id');
+    const body = { author: user, title: this.newTodo };
 
-  this.http.put(url, updatedTodo).subscribe(
+    this.http.post(url, body).subscribe(
+      response => {
+        this.todos.push(response);
+        this.newTodo = '';
+      },
+      error => this.handleError(error)
+    );
+  }
+
+  onCheckboxChange (event: any, todo: any) {
+    const url = environment.baseUrl + '/todos/' + todo.id + '/';
+    const updatedTodo = { ...todo, checked: event.target.checked };
+
+    this.http.put(url, updatedTodo).subscribe(
+      response => {
+        console.log(response);
+        this.loadTodos().then(todos => {
+          this.todos = todos;
+        });
+      },
+      error => {
+        console.error('Error:', error);
+      }
+    );
+  }
+
+  loadTodos () {
+    const url = `${environment.baseUrl}/todos/`;
+    return lastValueFrom(this.http.get(url)
+    );
+  }
+
+
+  deleteTodo (event: Event, id: number) {
+    event.preventDefault();
+  const url = environment.baseUrl + '/todos/' + id;
+
+  this.http.delete(url).subscribe(
     response => {
       console.log(response);
       this.loadTodos().then(todos => {
@@ -51,23 +74,19 @@ onCheckboxChange(event: any, todo: any) {
     }
   );
 }
-
-  constructor (private http: HttpClient) { }
-
-  async ngOnInit () {
+  
+  async handleApiCall (apiCall: Promise<any>, errorMessage: string) {
     try {
-      this.todos = await this.loadTodos();
-      console.log(this.todos);
+      return await apiCall;
     } catch (e) {
-      this.error = 'Fehler beim laden';
+      this.error = errorMessage;
       console.error('Error:', e);
     }
   }
 
-  loadTodos () {
-    const url = environment.baseUrl + '/todos/';
-    return lastValueFrom(this.http.get(url)
-    );
+  handleError (error: any) {
+    console.error('Error:', error);
+    this.error = 'An unexpected error occurred';
   }
 
 }
